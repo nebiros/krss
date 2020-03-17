@@ -1,0 +1,67 @@
+package model
+
+import (
+	"database/sql"
+	"strings"
+
+	"github.com/jmoiron/sqlx"
+	"github.com/nebiros/krss/internal/model/entity"
+	"github.com/pkg/errors"
+	"golang.org/x/crypto/bcrypt"
+)
+
+type UserInterface interface {
+	SignIn(email, password string) (entity.User, error)
+}
+
+type User struct {
+	*sqlx.DB
+}
+
+func NewUser(db *sqlx.DB) *User {
+	return &User{
+		DB: db,
+	}
+}
+
+func (m *User) SignIn(email, password string) (entity.User, error) {
+	if len(email) <= 0 {
+
+	}
+
+	if len(password) <= 0 {
+
+	}
+
+	q := `select
+		users.id as "user.id",
+		users.email as "user.email",
+		users.password as "user.password"
+		from
+		users
+		where
+		lower(users.email) = lower(?)`
+
+	stmt, err := m.Preparex(m.Rebind(q))
+	if err != nil {
+		return entity.User{}, errors.WithStack(err)
+	}
+
+	defer stmt.Close()
+
+	var u entity.User
+
+	if err := stmt.Get(&u, strings.ToLower(strings.TrimSpace(email))); err != nil {
+		return entity.User{}, errors.WithStack(err)
+	}
+
+	if len(u.Password) <= 0 {
+		return entity.User{}, errors.WithStack(sql.ErrNoRows)
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
+		return entity.User{}, errors.WithStack(err)
+	}
+
+	return u, nil
+}
