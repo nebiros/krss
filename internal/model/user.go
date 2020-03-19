@@ -26,15 +26,21 @@ func NewUser(db *sqlx.DB) *User {
 
 func (m *User) SignIn(email, password string) (entity.User, error) {
 	if len(email) <= 0 {
-
+		return entity.User{}, errors.WithStack(&ErrEmptyArgument{
+			Name:  "email",
+			Value: email,
+		})
 	}
 
 	if len(password) <= 0 {
-
+		return entity.User{}, errors.WithStack(&ErrEmptyArgument{
+			Name:  "password",
+			Value: password,
+		})
 	}
 
 	q := `select
-		users.id as "user.id",
+		users.user_id as "user.user_id",
 		users.email as "user.email",
 		users.password as "user.password"
 		from

@@ -1,11 +1,18 @@
 package main
 
 import (
+	"encoding/gob"
 	"log"
 	"os"
 
+	"github.com/nebiros/krss/internal/controller/output"
+
 	"github.com/urfave/cli/v2"
 )
+
+func init() {
+	gob.Register(output.UserOutput{})
+}
 
 func main() {
 	app := &cli.App{
