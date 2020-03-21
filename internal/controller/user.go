@@ -20,6 +20,8 @@ import (
 )
 
 type User struct {
+	Base
+
 	userModel model.UserInterface
 }
 
@@ -69,7 +71,7 @@ func (ctrl *User) DoLogin(c echo.Context) error {
 		return errors.WithStack(err)
 	}
 
-	return c.Redirect(http.StatusSeeOther, "/")
+	return c.Redirect(http.StatusSeeOther, "/feeds")
 }
 
 func (ctrl *User) Logout(c echo.Context) error {

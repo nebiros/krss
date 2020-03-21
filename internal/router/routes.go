@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/nebiros/krss/internal/controller"
 	"github.com/nebiros/krss/internal/db"
+	apiMiddleware "github.com/nebiros/krss/internal/middleware"
 	"github.com/nebiros/krss/internal/model"
 	"github.com/pkg/errors"
 )
@@ -22,6 +23,12 @@ func ConfigureRoutes(e *echo.Echo) error {
 
 	e.GET("/", userController.Login, middleware.CSRF())
 	e.POST("/", userController.DoLogin, middleware.CSRFWithConfig(csrfFormConfig))
+
+	feedController := controller.NewFeed(model.NewFeed(dbClient))
+
+	e.GET("/feeds", feedController.Feeds, apiMiddleware.IsLoggedIn())
+	e.GET("/feeds/add", feedController.AddFeed, apiMiddleware.IsLoggedIn(), middleware.CSRF())
+	e.POST("/feeds/add", feedController.DoAddFeed, apiMiddleware.IsLoggedIn(), middleware.CSRFWithConfig(csrfFormConfig))
 
 	return nil
 }
