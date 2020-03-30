@@ -2,15 +2,15 @@ package input
 
 import "github.com/nebiros/krss/internal/model/entity"
 
-type AddFeedInput struct {
-	Title string `json:"title" form:"title" validate:"required"`
+type NewFeedInput struct {
+	Title string `json:"title" form:"title" validate:"omitempty"`
 	URL   string `json:"url" form:"url" validate:"required,url"`
 }
 
-func (in *AddFeedInput) ToCreateFeed() entity.CreateFeed {
+func (in *NewFeedInput) ToCreateFeed() entity.CreateFeed {
 	return entity.CreateFeed{
-		UserID: 0,
-		Title:  "",
-		URL:    "",
+		UserID: -1,
+		Title:  in.Title,
+		URL:    in.URL,
 	}
 }

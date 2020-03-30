@@ -86,9 +86,7 @@ func (m *Feed) CreateFeedWithTx(tx *sqlx.Tx, feed entity.CreateFeed) (int, error
 		url)
 	values (:feed.user_id,
 		:feed.title,
-		:feed.url;
-	select 
-		last_insert_rowid())`
+		:feed.url)`
 
 	stmt, err := tx.PrepareNamed(q)
 	if err != nil {
@@ -97,11 +95,15 @@ func (m *Feed) CreateFeedWithTx(tx *sqlx.Tx, feed entity.CreateFeed) (int, error
 
 	defer stmt.Close()
 
-	var feedID int
-
-	if err := stmt.Get(&feedID, feed); err != nil {
+	res, err := stmt.Exec(feed)
+	if err != nil {
 		return -1, errors.WithStack(err)
 	}
 
-	return feedID, nil
+	feedID, err := res.LastInsertId()
+	if err != nil {
+		return -1, errors.WithStack(err)
+	}
+
+	return int(feedID), nil
 }

@@ -1,0 +1,16 @@
+{{define "feed/_form"}}
+<form action="/feeds/new" method="post">
+    <p>
+        <label>Title</label>
+        <input type="text" name="title"/>
+    </p>
+    <p>
+        <label>URL</label>
+        <input type="text" name="url"/>
+    </p>
+    <p>
+        <input type="submit" value="New"/>
+    </p>
+    <input type="hidden" name="csrf" value="{{index . "csrfToken"}}"/>
+</form>
+{{end}}

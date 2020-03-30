@@ -1,0 +1,18 @@
+{{define "title"}}{{index . "title"}}{{end}}
+{{define "content"}}
+    <h1>{{index . "title"}}</h1>
+    <form action="/" method="post">
+        <p>
+            <label>E-Mail</label>
+            <input type="text" name="email"/>
+        </p>
+        <p>
+            <label>Password</label>
+            <input type="password" name="password"/>
+        </p>
+        <p>
+            <input type="submit" value="Login"/>
+        </p>
+        <input type="hidden" name="csrf" value="{{index . "csrfToken"}}"/>
+    </form>
+{{end}}

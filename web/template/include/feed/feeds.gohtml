@@ -1,0 +1,16 @@
+{{define "title"}}{{index . "title"}}{{end}}
+{{define "content"}}
+    <h1>{{index . "title"}}</h1>
+    <p>
+        <a href="/feeds/new">New Feed</a>
+    </p>
+    {{if index . "feeds"}}
+        <p>
+        <ul>
+            {{range index . "feeds"}}
+                <li>{{.Title}}</li>
+            {{end}}
+        </ul>
+        </p>
+    {{end}}
+{{end}}

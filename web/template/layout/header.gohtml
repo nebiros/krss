@@ -1,0 +1,13 @@
+{{define "header"}}
+    <html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+        <title>KRSS | {{index . "title"}}</title>
+        <meta name="description" content="Kindle RSS Reader">
+        <meta name="author" content="Juan Alvarez">
+        {{block "style" .}} {{end}}
+    </head>
+{{end}}

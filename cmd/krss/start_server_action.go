@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"html/template"
+
+	"github.com/nebiros/krss/internal/router"
 
 	"github.com/gorilla/securecookie"
 
@@ -16,7 +17,6 @@ import (
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/nebiros/krss/internal/router"
 	"github.com/urfave/cli/v2"
 )
 
@@ -34,9 +34,12 @@ func startServerAction(c *cli.Context) error {
 		Validator: validator.New(),
 	}
 
-	e.Renderer = &apiMiddleware.TemplateRenderer{
-		Template: template.Must(template.ParseGlob("../../web/template/*.gohtml")),
+	tr, err := apiMiddleware.NewTemplateRenderer()
+	if err != nil {
+		return errors.WithStack(err)
 	}
+
+	e.Renderer = tr
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
@@ -44,8 +47,7 @@ func startServerAction(c *cli.Context) error {
 	e.Use(middleware.Secure())
 	e.Use(session.Middleware(sessions.NewCookieStore(cookieAuthKey, cookieEncryptionKey)))
 
-	err := router.ConfigureRoutes(e)
-	if err != nil {
+	if err := router.ConfigureRoutes(e); err != nil {
 		return errors.WithStack(err)
 	}
 

@@ -34,7 +34,7 @@ func NewUser(userModel model.UserInterface) *User {
 func (ctrl *User) Login(c echo.Context) error {
 	csrfToken := c.Get(middleware.DefaultCSRFConfig.ContextKey).(string)
 
-	return c.Render(http.StatusOK, "login.gohtml", map[string]interface{}{
+	return c.Render(http.StatusOK, "user/login", map[string]interface{}{
 		"csrfToken": csrfToken,
 	})
 }

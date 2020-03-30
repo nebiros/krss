@@ -27,8 +27,8 @@ func ConfigureRoutes(e *echo.Echo) error {
 	feedController := controller.NewFeed(model.NewFeed(dbClient))
 
 	e.GET("/feeds", feedController.Feeds, apiMiddleware.IsLoggedIn())
-	e.GET("/feeds/add", feedController.AddFeed, apiMiddleware.IsLoggedIn(), middleware.CSRF())
-	e.POST("/feeds/add", feedController.DoAddFeed, apiMiddleware.IsLoggedIn(), middleware.CSRFWithConfig(csrfFormConfig))
+	e.GET("/feeds/new", feedController.NewFeed, apiMiddleware.IsLoggedIn(), middleware.CSRF())
+	e.POST("/feeds/new", feedController.DoNewFeed, apiMiddleware.IsLoggedIn(), middleware.CSRFWithConfig(csrfFormConfig))
 
 	return nil
 }
