@@ -11,6 +11,6 @@
     <p>
         <input type="submit" value="New"/>
     </p>
-    <input type="hidden" name="csrf" value="{{index . "csrfToken"}}"/>
+    <input type="hidden" name="csrf" value="{{.Data.CSRFToken}}"/>
 </form>
 {{end}}

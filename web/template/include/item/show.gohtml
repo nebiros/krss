@@ -1,0 +1,8 @@
+{{define "content"}}
+    {{if .Data.Item}}
+        <h1>{{.Title}}</h1>
+        {{if .Data.Item.Content}}
+            <p>{{htmlSafe .Data.Item.Content}}</p>
+        {{end}}
+    {{end}}
+{{end}}

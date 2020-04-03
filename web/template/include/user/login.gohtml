@@ -1,6 +1,5 @@
-{{define "title"}}{{index . "title"}}{{end}}
 {{define "content"}}
-    <h1>{{index . "title"}}</h1>
+    <h1>{{.Title}}</h1>
     <form action="/" method="post">
         <p>
             <label>E-Mail</label>
@@ -13,6 +12,6 @@
         <p>
             <input type="submit" value="Login"/>
         </p>
-        <input type="hidden" name="csrf" value="{{index . "csrfToken"}}"/>
+        <input type="hidden" name="csrf" value="{{.Data.CSRFToken}}"/>
     </form>
 {{end}}

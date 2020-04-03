@@ -1,14 +1,13 @@
-{{define "title"}}{{index . "title"}}{{end}}
 {{define "content"}}
-    <h1>{{index . "title"}}</h1>
+    <h1>{{.Title}}</h1>
     <p>
-        <a href="/feeds/new">New Feed</a>
+        <a href="/feeds/new">new feed</a>
     </p>
-    {{if index . "feeds"}}
+    {{if .Data.Feeds}}
         <p>
         <ul>
-            {{range index . "feeds"}}
-                <li>{{.Title}}</li>
+            {{range .Data.Feeds}}
+                <li><a href="/feeds/{{.FeedID}}">{{.Title}} ({{.URL}})</a></li>
             {{end}}
         </ul>
         </p>

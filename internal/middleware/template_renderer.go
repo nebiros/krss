@@ -6,6 +6,9 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
+
+	"github.com/dustin/go-humanize"
 
 	"github.com/pkg/errors"
 
@@ -22,6 +25,11 @@ type fileData struct {
 	fileName     string
 	basename     string
 	key          string
+}
+
+type IncludeData struct {
+	Title string
+	Data  interface{}
 }
 
 type TemplateRendererConfig struct {
@@ -101,7 +109,10 @@ func (t *TemplateRenderer) loadTemplates() error {
 		}
 
 		t.templates[fd.key] = clone.Funcs(template.FuncMap{
-			"include": t.includeControl,
+			"include":       t.includeControl,
+			"timeFormat":    t.timeFormatControl,
+			"timeHumanized": t.timeHumanizedControl,
+			"htmlSafe":      t.htmlSafeControl,
 		})
 		t.templates[fd.key] = template.Must(t.templates[fd.key].ParseFiles(files...))
 	}
@@ -133,12 +144,12 @@ func (t *TemplateRenderer) includeControl(key string, contextList ...interface{}
 	buf := t.bufpool.Get()
 	defer t.bufpool.Put(buf)
 
-	var data interface{}
+	var data IncludeData
 
 	if len(contextList) == 0 {
-		data = nil
+		data = IncludeData{}
 	} else {
-		data = contextList[0]
+		data = contextList[0].(IncludeData)
 	}
 
 	if err := tpl.Execute(buf, data); err != nil {
@@ -146,6 +157,18 @@ func (t *TemplateRenderer) includeControl(key string, contextList ...interface{}
 	}
 
 	return template.HTML(buf.String()), nil
+}
+
+func (t *TemplateRenderer) timeFormatControl(ti time.Time, layout string) string {
+	return ti.Format(layout)
+}
+
+func (t *TemplateRenderer) timeHumanizedControl(ti time.Time) string {
+	return humanize.Time(ti)
+}
+
+func (t *TemplateRenderer) htmlSafeControl(html string) template.HTML {
+	return template.HTML(html)
 }
 
 func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
@@ -161,7 +184,7 @@ func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c 
 	buf := t.bufpool.Get()
 	defer t.bufpool.Put(buf)
 
-	if err := tpl.Execute(buf, data); err != nil {
+	if err := tpl.Execute(buf, data.(IncludeData)); err != nil {
 		return errors.Wrapf(err, "template '%s' execution failed", name)
 	}
 

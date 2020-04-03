@@ -3,6 +3,8 @@ package controller
 import (
 	"net/http"
 
+	apiMiddleware "github.com/nebiros/krss/internal/middleware"
+
 	"github.com/nebiros/krss/internal/controller/output"
 
 	"github.com/gorilla/sessions"
@@ -34,8 +36,11 @@ func NewUser(userModel model.UserInterface) *User {
 func (ctrl *User) Login(c echo.Context) error {
 	csrfToken := c.Get(middleware.DefaultCSRFConfig.ContextKey).(string)
 
-	return c.Render(http.StatusOK, "user/login", map[string]interface{}{
-		"csrfToken": csrfToken,
+	return c.Render(http.StatusOK, "user/login", apiMiddleware.IncludeData{
+		Title: "login",
+		Data: struct {
+			CSRFToken string
+		}{CSRFToken: csrfToken},
 	})
 }
 

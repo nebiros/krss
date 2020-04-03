@@ -1,0 +1,28 @@
+{{define "content"}}
+    {{if .Data.Feed}}
+        <h1>{{.Title}}</h1>
+        {{if .Data.Description}}
+            <p>{{.Data.Description}}</p>
+        {{end}}
+        {{if .Data.Items}}
+            <p>
+            <ul>
+                {{range .Data.Items}}
+                    <li>
+                        <a href="/feeds/{{$.Data.Feed.FeedID}}/items/{{.GUID}}">
+                            {{.Title}}
+                            (
+                            {{if .PublishedParsed}}
+                                {{timeHumanized .PublishedParsed}}
+                            {{else}}
+                                {{timeHumanized .UpdatedParsed}}
+                            {{end}}
+                            )
+                        </a>
+                    </li>
+                {{end}}
+            </ul>
+            </p>
+        {{end}}
+    {{end}}
+{{end}}

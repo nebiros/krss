@@ -18,9 +18,9 @@ type User struct {
 	*sqlx.DB
 }
 
-func NewUser(db *sqlx.DB) *User {
+func NewUser(dbClient *sqlx.DB) *User {
 	return &User{
-		DB: db,
+		DB: dbClient,
 	}
 }
 

@@ -4,6 +4,8 @@ go 1.14
 
 require (
 	github.com/PuerkitoBio/goquery v1.5.1 // indirect
+	github.com/bluele/gcache v0.0.0-20190518031135-bc40bd653833
+	github.com/dustin/go-humanize v1.0.1-0.20200219035652-afde56e7acac
 	github.com/go-playground/validator/v10 v10.2.0
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.2.0

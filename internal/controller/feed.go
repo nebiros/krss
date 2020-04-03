@@ -2,6 +2,10 @@ package controller
 
 import (
 	"net/http"
+	"strconv"
+
+	apiMiddleware "github.com/nebiros/krss/internal/middleware"
+	"github.com/nebiros/krss/internal/model/entity"
 
 	"github.com/mmcdole/gofeed"
 
@@ -37,18 +41,22 @@ func (ctrl *Feed) Feeds(c echo.Context) error {
 		return errors.WithStack(err)
 	}
 
-	return c.Render(http.StatusOK, "feed/feeds", map[string]interface{}{
-		"title": "feeds",
-		"feeds": fs,
+	return c.Render(http.StatusOK, "feed/feeds", apiMiddleware.IncludeData{
+		Title: "feeds",
+		Data: struct {
+			Feeds entity.Feeds
+		}{Feeds: fs},
 	})
 }
 
 func (ctrl *Feed) NewFeed(c echo.Context) error {
 	csrfToken := c.Get(middleware.DefaultCSRFConfig.ContextKey).(string)
 
-	return c.Render(http.StatusOK, "feed/new", map[string]interface{}{
-		"title":     "new feed",
-		"csrfToken": csrfToken,
+	return c.Render(http.StatusOK, "feed/new", apiMiddleware.IncludeData{
+		Title: "new feed",
+		Data: struct {
+			CSRFToken string
+		}{CSRFToken: csrfToken},
 	})
 }
 
@@ -86,4 +94,77 @@ func (ctrl *Feed) DoNewFeed(c echo.Context) error {
 	}
 
 	return c.Redirect(http.StatusSeeOther, "/feeds")
+}
+
+func (ctrl *Feed) Show(c echo.Context) error {
+	feedID, err := strconv.Atoi(c.Param("feed_id"))
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	f, err := ctrl.feedModel.FeedByFeedID(feedID)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	fp, err := ctrl.feedModel.ParseFeed(f)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return c.Render(http.StatusOK, "feed/show", apiMiddleware.IncludeData{
+		Title: f.Title,
+		Data: struct {
+			Feed        entity.Feed
+			Description string
+			Items       []*gofeed.Item
+		}{
+			Feed:        f,
+			Description: fp.Description,
+			Items:       fp.Items,
+		},
+	})
+}
+
+func (ctrl *Feed) ShowItem(c echo.Context) error {
+	feedID, err := strconv.Atoi(c.Param("feed_id"))
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	itemID := c.Param("item_id")
+
+	f, err := ctrl.feedModel.FeedByFeedID(feedID)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	fp, err := ctrl.feedModel.ParseFeed(f)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	var item *gofeed.Item
+
+	for _, i := range fp.Items {
+		if i.GUID == itemID {
+			item = i
+			break
+		}
+	}
+
+	if item == nil {
+		return echo.ErrNotFound
+	}
+
+	return c.Render(http.StatusOK, "item/show", apiMiddleware.IncludeData{
+		Title: item.Title,
+		Data: struct {
+			Feed entity.Feed
+			Item *gofeed.Item
+		}{
+			Feed: f,
+			Item: item,
+		},
+	})
 }
