@@ -1,6 +1,9 @@
 package router
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/bluele/gcache"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -22,7 +25,12 @@ func ConfigureRoutes(e *echo.Echo) error {
 	}
 
 	cacheClient := gcache.New(10).ARC().Build()
+
+	httpClient := &http.Client{
+		Timeout: 30 * time.Second,
+	}
 	feedParser := gofeed.NewParser()
+	feedParser.Client = httpClient
 
 	userController := controller.NewUser(model.NewUser(dbClient))
 
@@ -35,7 +43,8 @@ func ConfigureRoutes(e *echo.Echo) error {
 	e.GET("/feeds/new", feedController.NewFeed, apiMiddleware.IsLoggedIn(), middleware.CSRF())
 	e.POST("/feeds/new", feedController.DoNewFeed, apiMiddleware.IsLoggedIn(), middleware.CSRFWithConfig(csrfFormConfig))
 	e.GET("/feeds/:feed_id", feedController.Show, apiMiddleware.IsLoggedIn())
-	e.GET("/feeds/:feed_id/items/:item_id", feedController.ShowItem, apiMiddleware.IsLoggedIn())
+	e.GET("/feeds/:feed_id/items/:slug", feedController.ShowItem, apiMiddleware.IsLoggedIn())
+	e.GET("/feeds/:feed_id/items/:slug/read", feedController.ReadItem, apiMiddleware.IsLoggedIn())
 
 	return nil
 }

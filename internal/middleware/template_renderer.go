@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gosimple/slug"
+
 	"github.com/dustin/go-humanize"
 
 	"github.com/pkg/errors"
@@ -113,6 +115,7 @@ func (t *TemplateRenderer) loadTemplates() error {
 			"timeFormat":    t.timeFormatControl,
 			"timeHumanized": t.timeHumanizedControl,
 			"htmlSafe":      t.htmlSafeControl,
+			"slug":          t.slugControl,
 		})
 		t.templates[fd.key] = template.Must(t.templates[fd.key].ParseFiles(files...))
 	}
@@ -169,6 +172,10 @@ func (t *TemplateRenderer) timeHumanizedControl(ti time.Time) string {
 
 func (t *TemplateRenderer) htmlSafeControl(html string) template.HTML {
 	return template.HTML(html)
+}
+
+func (t *TemplateRenderer) slugControl(s string) string {
+	return slug.Make(s)
 }
 
 func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {

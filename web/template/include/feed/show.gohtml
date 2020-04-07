@@ -9,7 +9,7 @@
             <ul>
                 {{range .Data.Items}}
                     <li>
-                        <a href="/feeds/{{$.Data.Feed.FeedID}}/items/{{.GUID}}">
+                        <a href="/feeds/{{$.Data.Feed.FeedID}}/items/{{slug .Title}}">
                             {{.Title}}
                             (
                             {{if .PublishedParsed}}

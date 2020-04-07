@@ -4,5 +4,6 @@
         {{if .Data.Item.Content}}
             <p>{{htmlSafe .Data.Item.Content}}</p>
         {{end}}
+        <p><a href="/feeds/{{$.Data.Feed.FeedID}}/items/{{slug .Data.Item.Title}}/read">read</a></p>
     {{end}}
 {{end}}

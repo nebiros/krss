@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gosimple/slug"
+
+	"github.com/go-shiori/go-readability"
+
 	"github.com/bluele/gcache"
 	"github.com/jmoiron/sqlx"
 	"github.com/mmcdole/gofeed"
@@ -17,6 +21,8 @@ type FeedInterface interface {
 	CreateFeedWithTx(tx *sqlx.Tx, feed entity.CreateFeed) (int, error)
 	FeedByFeedID(feedID int) (entity.Feed, error)
 	ParseFeed(feed entity.Feed) (*gofeed.Feed, error)
+	FeedItemBySlugIDWithItems(items []*gofeed.Item, slugID string) *gofeed.Item
+	ReadItem(item *gofeed.Item) (readability.Article, error)
 }
 
 type Feed struct {
@@ -188,4 +194,33 @@ func (m *Feed) ParseFeed(feed entity.Feed) (*gofeed.Feed, error) {
 	}
 
 	return fp, nil
+}
+
+func (m *Feed) FeedItemBySlugIDWithItems(items []*gofeed.Item, slugID string) *gofeed.Item {
+	var item *gofeed.Item
+
+	for _, i := range items {
+		if slug.Make(i.Title) == slugID {
+			item = i
+			break
+		}
+	}
+
+	return item
+}
+
+func (m *Feed) ReadItem(item *gofeed.Item) (readability.Article, error) {
+	resp, err := m.feedParser.Client.Get(item.Link)
+	if err != nil {
+		return readability.Article{}, errors.WithStack(err)
+	}
+
+	defer resp.Body.Close()
+
+	article, err := readability.FromReader(resp.Body, item.Link)
+	if err != nil {
+		return readability.Article{}, errors.WithStack(err)
+	}
+
+	return article, nil
 }

@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-shiori/go-readability"
+
 	apiMiddleware "github.com/nebiros/krss/internal/middleware"
 	"github.com/nebiros/krss/internal/model/entity"
 
@@ -132,7 +134,7 @@ func (ctrl *Feed) ShowItem(c echo.Context) error {
 		return errors.WithStack(err)
 	}
 
-	itemID := c.Param("item_id")
+	slugID := c.Param("slug")
 
 	f, err := ctrl.feedModel.FeedByFeedID(feedID)
 	if err != nil {
@@ -144,14 +146,7 @@ func (ctrl *Feed) ShowItem(c echo.Context) error {
 		return errors.WithStack(err)
 	}
 
-	var item *gofeed.Item
-
-	for _, i := range fp.Items {
-		if i.GUID == itemID {
-			item = i
-			break
-		}
-	}
+	item := ctrl.feedModel.FeedItemBySlugIDWithItems(fp.Items, slugID)
 
 	if item == nil {
 		return echo.ErrNotFound
@@ -165,6 +160,45 @@ func (ctrl *Feed) ShowItem(c echo.Context) error {
 		}{
 			Feed: f,
 			Item: item,
+		},
+	})
+}
+
+func (ctrl *Feed) ReadItem(c echo.Context) error {
+	feedID, err := strconv.Atoi(c.Param("feed_id"))
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	slugID := c.Param("slug")
+
+	f, err := ctrl.feedModel.FeedByFeedID(feedID)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	fp, err := ctrl.feedModel.ParseFeed(f)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	item := ctrl.feedModel.FeedItemBySlugIDWithItems(fp.Items, slugID)
+
+	if item == nil {
+		return echo.ErrNotFound
+	}
+
+	ir, err := ctrl.feedModel.ReadItem(item)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return c.Render(http.StatusOK, "item/read", apiMiddleware.IncludeData{
+		Title: item.Title,
+		Data: struct {
+			ItemRead readability.Article
+		}{
+			ItemRead: ir,
 		},
 	})
 }
