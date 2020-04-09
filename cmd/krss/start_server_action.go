@@ -41,10 +41,14 @@ func startServerAction(c *cli.Context) error {
 
 	e.Renderer = tr
 
+	csrfFormConfig := middleware.DefaultCSRFConfig
+	csrfFormConfig.TokenLookup = "form:csrf"
+
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.Gzip())
 	e.Use(middleware.Secure())
+	e.Use(middleware.CSRFWithConfig(csrfFormConfig))
 	e.Use(session.Middleware(sessions.NewCookieStore(cookieAuthKey, cookieEncryptionKey)))
 
 	if err := router.ConfigureRoutes(e); err != nil {
