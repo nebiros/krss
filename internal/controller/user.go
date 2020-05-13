@@ -3,12 +3,13 @@ package controller
 import (
 	"net/http"
 
+	"golang.org/x/crypto/bcrypt"
+
 	apiMiddleware "github.com/nebiros/krss/internal/middleware"
 
 	"github.com/nebiros/krss/internal/controller/output"
 
 	"github.com/gorilla/sessions"
-	"github.com/labstack/echo-contrib/session"
 
 	"github.com/labstack/echo/v4/middleware"
 
@@ -34,10 +35,16 @@ func NewUser(userModel model.UserInterface) *User {
 }
 
 func (ctrl *User) Login(c echo.Context) error {
+	sess, err := ctrl.Session(c)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
 	csrfToken := c.Get(middleware.DefaultCSRFConfig.ContextKey).(string)
 
 	return c.Render(http.StatusOK, "user/login", apiMiddleware.IncludeData{
-		Title: "login",
+		Title:   "login",
+		Flashes: sess.Flashes(),
 		Data: struct {
 			CSRFToken string
 		}{CSRFToken: csrfToken},
@@ -54,13 +61,23 @@ func (ctrl *User) DoLogin(c echo.Context) error {
 		return errors.WithStack(err)
 	}
 
-	u, err := ctrl.userModel.SignIn(in.Email, in.Password)
+	sess, err := ctrl.Session(c)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	sess, err := session.Get("session", c)
+	u, err := ctrl.userModel.SignIn(in.Email, in.Password)
 	if err != nil {
+		if errors.Cause(err) == bcrypt.ErrMismatchedHashAndPassword {
+			sess.AddFlash("wrong password")
+
+			if err := sess.Save(c.Request(), c.Response()); err != nil {
+				return errors.WithStack(err)
+			}
+
+			return c.Redirect(http.StatusFound, c.Echo().Reverse("user_login"))
+		}
+
 		return errors.WithStack(err)
 	}
 
@@ -80,7 +97,7 @@ func (ctrl *User) DoLogin(c echo.Context) error {
 }
 
 func (ctrl *User) Logout(c echo.Context) error {
-	sess, err := session.Get("session", c)
+	sess, err := ctrl.Session(c)
 	if err != nil {
 		return errors.WithStack(err)
 	}

@@ -30,8 +30,8 @@ func ConfigureRoutes(e *echo.Echo) error {
 
 	userController := controller.NewUser(model.NewUser(dbClient))
 
-	e.GET("/", userController.Login)
-	e.POST("/", userController.DoLogin)
+	e.GET("/", userController.Login).Name = "user_login"
+	e.POST("/", userController.DoLogin).Name = "user_do_login"
 
 	feedController := controller.NewFeed(model.NewFeed(dbClient, feedParser, cacheClient))
 

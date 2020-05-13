@@ -1,0 +1,7 @@
+{{define "flashes"}}
+    {{if .Flashes}}
+        <ul>
+            {{range .Flashes}}<li>{{.}}</li>{{end}}
+        </ul>
+    {{end}}
+{{end}}

@@ -30,8 +30,9 @@ type fileData struct {
 }
 
 type IncludeData struct {
-	Title string
-	Data  interface{}
+	Title   string
+	Flashes []interface{}
+	Data    interface{}
 }
 
 type TemplateRendererConfig struct {
